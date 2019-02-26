@@ -1,0 +1,116 @@
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+}
+
+li {
+    float: left;
+}
+
+li a, .dropbtn {
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover, .dropdown:hover .dropbtn {
+    background-color: red;
+}
+
+li.dropdown {
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {background-color: #f1f1f1}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    text-align: center;
+    padding: 5px;
+}
+
+td[class="Moany & Groany"] {
+    background-color: #F1CDA2;
+}
+
+td[class="OEL Sweedwagon"] {
+    background-color:  #EA9A99;
+}
+
+td[class="Poop hole lupul"] {
+    background-color:  #B1A7D3;
+}
+
+td[class="Slap Shot"] {
+    background-color: #9FC5E9;
+}
+
+td[class="Fabian Mayers Team"] {
+    background-color: #BDD6AC;
+}
+
+td[class="Drai-Pasta"] {
+    background-color: #CEA8BC;
+}
+
+td[class="HockeyMind"] {
+    background-color: #A8C3C8;
+}
+
+td[class="McDavid & Goaliath"] {
+    background-color: #FAE6A3;
+}
+
+td[class="Jagr Bombs"] {
+    background-color: #BCC3C3;
+}
+
+td[class="I Kane too early"] {
+    background-color: #CE9589;
+}
+
+td[class="D"] {
+    background-color: #BDD6AC;
+}
+
+td[class="G"] {
+    background-color: #EA9A99;
+}
+
+td[class*="C"], td[class*="LW"], td[class*="RW"] {
+    background-color: #9FC5E9;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}

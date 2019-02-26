@@ -1,0 +1,31 @@
+<html>
+    <head>
+        {% block head %}
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+        <script type="text/javascript" src="http://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
+        <title>{% block title %}{% endblock %} - Keeper</title>
+        {% endblock %}
+    </head>
+    <body>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/transactions/">Transactions</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropbtn">Teams</a>
+                <div class="dropdown-content">
+                    {% for team in teams %}
+                    {% if team.team_id != 0 %}
+                        <a href="/teams/{{ team.id }}">{{ team.name }}</a>
+                    {% else %}
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </li>
+            <li><a href="/players/">Players</a></li>
+            <li><a href="/draft/team">Draft</a></li>
+            <li style="float:right"><a href="https://hockey.fantasysports.yahoo.com/hockey/1994">League Website</a></li>
+        </ul>
+        {% block body %}
+        {% endblock %}
+    </body>
+</html>

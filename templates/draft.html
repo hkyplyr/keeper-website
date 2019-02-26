@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}Draft{% endblock %}
+{% block body %}
+<h1>Draft</h1>
+<table border=1>
+<tr>
+    <td></td>
+    {% for i in range(1,11) %}
+    <td><b>Pick {{ i }}</b></td>
+    {% endfor %}
+</tr>
+<tr>
+{% for i in range(24) %}
+<td><b>Rd. {{ i+1 }}</b></td>
+{% for j in range(10) %}
+{% set player = players[(i * 10) + j] %}
+{% set team = teams[player.team_id-1].team_name %}
+
+{% if clazz =='position' %}
+    {% set class_id = player.positions %}
+{% else %}
+    {% set class_id = team %}
+{% endif %}
+<td class="{{ class_id }}" onclick="location.href='/player/{{ player.player_id }}'">
+    {% if player.keeper == True %}
+    <b>{{ player.first_name }} {{ player.last_name }}<br>
+    {{ player.nhl_team }} - {{ player.positions }}<br>{{ team }}</b>
+    {% else %}
+    {{ player.first_name }} {{ player.last_name }}<br>
+    {{ player.nhl_team }} - {{ player.positions }}<br>{{ team }}
+    {%endif%}
+    </td>
+{% if loop.index % 10 == 0 %}
+</tr>
+<tr>
+{% endif %}
+{% endfor %}
+</tr>
+{% endfor %}
+
+    
+</tr>
+</table>
+{% endblock %}

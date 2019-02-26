@@ -1,0 +1,75 @@
+{% extends "layout.html" %}
+{% block title %}{{ teams[team_id].name }}{% endblock %}
+{% block body %}
+<h1>{{ teams[team_id].name }} - {{ teams[team_id].manager }}</h1>
+<div style="overflow-x:auto;">
+
+<h2>Players</h2>
+<table id="players" class="sortable">
+    <tr>
+        <th>Position</th>
+        <th>Name</th>
+        <th>GP</th>
+        <th>Goals</th>
+        <th>Assists</th>
+        <th>Points</th>
+        <th>+/-</th>
+        <th>PPP</th>
+        <th>SHP</th>
+        <th>SOG</th>
+        <th>Hits</th>
+        <th>Blocks</th>
+    </tr>
+{% for skater in skaters %}
+    <tr>
+        <td>{{ skater.positions }}</td>
+        <td>{{ skater.first_name }} {{ skater.last_name }}</td>
+        <td>{{ skater.gp }}</td>
+        <td>{{ skater.g }}</td>
+        <td>{{ skater.a }}</td>
+        <td>{{ skater.p }}</td>
+        <td>{{ skater.pm }}</td>
+        <td>{{ skater.ppp }}</td>
+        <td>{{ skater.shp }}</td>
+        <td>{{ skater.sog }}</td>
+        <td>{{ skater.hit }}</td>
+        <td>{{ skater.blk }}</td>
+    </tr>
+{% else %}
+    <tr>
+        <td>No skaters.</td>
+    </tr>
+{% endfor %}
+</table>
+
+<h2>Goalies</h2>
+<table id="players" class="sortable">
+    <tr>
+        <th>Position</th>
+        <th>Name</th>
+        <th>GP</th>
+        <th>Wins</th>
+        <th>Losses</th>
+        <th>Goals Against</th>
+        <th>Saves</th>
+        <th>Shutouts</th>
+    </tr>
+{% for goalie in goalies %}
+    <tr>
+        <td>{{ goalie.positions }}</td>
+        <td>{{ goalie.first_name }} {{ goalie.last_name }}</td>
+        <td>{{ goalie.gp }}</td>
+        <td>{{ goalie.w }}</td>
+        <td>{{ goalie.l }}</td>
+        <td>{{ goalie.ga }}</td>
+        <td>{{ goalie.sv }}</td>
+        <td>{{ goalie.so }}</td>
+    </tr>
+{% else %}
+    <tr>
+        <td>No goalies.</td>
+    </tr>
+{% endfor %}
+</table>
+</div>
+{% endblock %}
