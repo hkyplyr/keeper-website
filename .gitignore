@@ -1,5 +1,6 @@
 .tokens.json
 .vscode/
+/reports
 
 # General
 .DS_Store

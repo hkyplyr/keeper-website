@@ -29,7 +29,7 @@ class YahooFantasyApi:
         headers = {'Authorization': 'Bearer {}'.format(self.access_token)}
         url = '{}/{}'.format(BASE_URL, path)
 
-        return requests.get(url, params=params, headers=headers).json()
+        return requests.get(url, params=params, headers=headers).json()['fantasy_content']
 
     def __get_game_resource(self, sub_resource):
         path = 'game/nhl/{}'.format(sub_resource)
@@ -37,7 +37,7 @@ class YahooFantasyApi:
 
     def __get_league_resource(self, sub_resource):
         path = 'league/nhl.l.{}/{}'.format(self.league_id, sub_resource)
-        return self.__get(path)
+        return self.__get(path)['league']
 
     def __get_player_resource(self, sub_resource, player_id):
         path = 'player/nhl.p.{}/{}'.format(player_id, sub_resource)
@@ -45,7 +45,7 @@ class YahooFantasyApi:
 
     def __get_team_resource(self, sub_resource, team_id):
         path = 'team/nhl.l.{}.t.{}/{}'.format(self.league_id, team_id, sub_resource)
-        return self.__get(path)
+        return self.__get(path)['team']
 
     def __get_transaction_resource(self, sub_resource, transaction_id):
         path = 'team/nhl.l.{}.tr.{}/{}'.format(self.league_id, transaction_id, sub_resource)
@@ -58,7 +58,7 @@ class YahooFantasyApi:
         return self.__get_league_resource('standings')
 
     def get_roster(self, team_id):
-        return self.__get_team_resource('roster/players', team_id)
+        return self.__get_team_resource('roster/players', team_id)[1]['roster']
 
     def get_scoreboard(self, week):
         return self.__get_league_resource('scoreboard;week={}'.format(week))
@@ -71,10 +71,10 @@ class YahooFantasyApi:
         return self.__get_team_resource('roster;type=date;date={}/players/stats'.format(date), team_id)
     
     def get_teams(self):
-        return self.__get_league_resource('teams')
+        return self.__get_league_resource('teams')[1]['teams']
     
-    def get_draft(self):
-        return self.__get_league_resource('draftresults')
+    def get_draft_results(self):
+        return self.__get_league_resource('draftresults')[1]['draft_results']
 
     def get_player(self, player_id):
         return self.__get_player_resource('metadata', player_id)
@@ -86,7 +86,7 @@ class YahooFantasyApi:
         return self.__get_league_resource('players;start={};status=K'.format(start))
 
     def get_transactions(self):
-        return self.__get_league_resource('transactions')
+        return self.__get_league_resource('transactions')[1]['transactions']
 
     def get_game_weeks(self):
         return self.__get_game_resource('game_weeks')
