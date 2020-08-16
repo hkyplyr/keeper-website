@@ -1,5 +1,8 @@
-from app import db
+from app import get_db
 from utils.json_utils import get_value
+from sqlalchemy.ext.hybrid import hybrid_method
+
+db = get_db()
 
 class Team(db.Model):
     __tablename__ = 'teams'
@@ -9,7 +12,7 @@ class Team(db.Model):
     manager = db.Column(db.Text)
     url = db.Column(db.Text)
     logo = db.Column(db.Text)
-    
+
     def __init__(self, id, name, url, logo, manager):
         self.id = id
         self.name = name
@@ -24,8 +27,9 @@ class Team(db.Model):
         url = get_value(json, 4, 'url')
         logo = get_value(json, 5, 'team_logos')[0]['team_logo']['url']
         manager = get_value(json, 19, 'managers')[0]['manager']['nickname']
-        
+
         return Team(id, name, url, logo, manager)
+
 
 class Player(db.Model):
     __tablename__ = 'players'
@@ -37,8 +41,10 @@ class Player(db.Model):
     number = db.Column(db.Integer)
     positions = db.Column(db.String(7))
     team_id = db.Column(db.Integer)
+    keeper_cost = db.Column(db.Integer)
 
-    def __init__(self, id, first_name, last_name, nhl_team, number, positions, team_id):
+    def __init__(self, id, first_name, last_name, nhl_team, number,
+                 positions, team_id, keeper_cost):
         self.id = id
         self.first_name = first_name
         self.last_name = last_name
@@ -46,56 +52,146 @@ class Player(db.Model):
         self.number = number
         self.positions = positions
         self.team_id = team_id
+        self.keeper_cost = keeper_cost
 
     @staticmethod
-    def parse_json(info_json, owner_json):
-        id = get_value(info_json, 1, 'player_id')
-        first_name = get_value(info_json, 2, 'name')['first'].replace("'", "''")
-        last_name = get_value(info_json, 2, 'name')['last'].replace("'", "''")
+    def parse_json(info_json, owner_json, keeper_costs):
+        id = int(get_value(info_json, 1, 'player_id'))
+        first_name = get_value(info_json, 2, 'name')['first'] \
+            .replace("'", "''")
+        last_name = get_value(info_json, 2, 'name')['last'] \
+            .replace("'", "''")
         nhl_team = get_value(info_json, 6, 'editorial_team_abbr').upper()
 
         # Parse the uniform number
         number = get_value(info_json, 7, 'uniform_number')
         number = 0 if number == "" else int(number)
 
-        # Parse the eligible positions 
+        # Parse the eligible positions
         positions = get_value(info_json, 12, 'eligible_positions')
-        positions = ','.join(p for p in list(filter(lambda p: 'IR' not in p and 'F' not in p, map(lambda p: p['position'], positions))))
+        positions = ','.join(
+            p for p in list(
+                filter(
+                    lambda p: 'IR' not in p and 'F' not in p,
+                    map(lambda p: p['position'], positions))))
 
         # Parse the owning team
         ownership = owner_json['ownership']
-        if ownership['ownership_type'] == 'freeagents' or ownership['ownership_type'] == 'waivers':
+        if ownership['ownership_type'] == 'freeagents':
             team_id = 0
+        elif ownership['ownership_type'] == 'waivers':
+            team_id = 99
         else:
             team_id = ownership['owner_team_key'][13:]
         
-        return Player(id, first_name, last_name, nhl_team, number, positions, team_id)
+        # Get the keeper cost for the player
+        keeper_cost = keeper_costs.get(id, 18)
+
+        return Player(id, first_name, last_name, nhl_team, number,
+                      positions, team_id, keeper_cost)
+
 
 class Draft(db.Model):
     __tablename__ = 'draftresults'
 
-    player_id = db.Column(db.Integer, db.ForeignKey(Player.id), primary_key=True, autoincrement=False)
+    player_id = db.Column(db.Integer, db.ForeignKey(Player.id),
+                          primary_key=True, autoincrement=False)
     team_id = db.Column(db.Integer, db.ForeignKey(Team.id))
     pick = db.Column(db.Integer)
     round = db.Column(db.Integer)
+    keeper = db.Column(db.Boolean)
+
+    def __init__(self, player_id, team_id, pick, round, keeper):
+        self.player_id = player_id
+        self.team_id = team_id
+        self.pick = pick
+        self.round = round
+        self.keeper = keeper
+
+    @staticmethod
+    def parse_json(json, keepers):
+        player_id = json['player_key'][6:]
+        team_id = json['team_key'][13:]
+        pick = json['pick']
+        round = json['round']
+        keeper = player_id in keepers
+
+        return Draft(player_id, team_id, pick, round, keeper)
+
 
 class Pick(db.Model):
     __tablename__ = 'picks'
 
-    original_team_id = db.Column(db.Integer, db.ForeignKey(Team.id), primary_key=True, autoincrement=False)
+    original_team_id = db.Column(db.Integer, db.ForeignKey(Team.id),
+                                 primary_key=True, autoincrement=False)
     draft_round = db.Column(db.Integer, primary_key=True, autoincrement=False)
     owning_team_id = db.Column(db.Integer, db.ForeignKey(Team.id))
+
+    def __init__(self, original_team, owning_team, draft_round):
+        self.original_team_id = original_team
+        self.owning_team_id = owning_team
+        self.draft_round = draft_round
+
+    @staticmethod
+    def parse_json(json):
+        original_team = json['original_team_key'][13:]
+        destination_team = json['destination_team_key'][13:]
+        draft_round = json['round']
+        return Pick(original_team, destination_team, draft_round)
+
 
 class Transaction(db.Model):
     __tablename__ = 'transactions'
 
-    transaction_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=False)
     timestamp = db.Column(db.DateTime)
     transaction_type = db.Column(db.String(10))
-    acquired_players = db.Column(db.JSON)
-    acquired_picks = db.Column(db.JSON)
-    relinquished_players = db.Column(db.JSON)
-    relinquished_picks = db.Column(db.JSON)
+    faab_bid = db.Column(db.Integer)
+
+    def __init__(self, id, timestamp, transaction_type, faab_bid):
+        self.id = id
+        self.timestamp = timestamp
+        self.transaction_type = transaction_type
+        self.faab_bid = faab_bid
+
+
+class TransactonPlayers(db.Model):
+    __tablename__ = 'transaction_players'
+
+    transaction_id = db.Column(db.Integer, db.ForeignKey(Transaction.id),
+                               primary_key=True)
+    source_id = db.Column(db.Integer, primary_key=True)
+    destination_id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey(Player.id),
+                          primary_key=True)
+
+    def __init__(self, transaction_id, source_id, destination_id, player_id):
+        self.transaction_id = transaction_id
+        self.source_id = source_id
+        self.destination_id = destination_id
+        self.player_id = player_id
+
+
+class TransactionPicks(db.Model):
+    __tablename__ = 'transaction_picks'
+
+    transaction_id = db.Column(db.Integer, db.ForeignKey(Transaction.id),
+                               primary_key=True)
+    source_id = db.Column(db.Integer, db.ForeignKey(Team.id), primary_key=True)
+    destination_id = db.Column(db.Integer, db.ForeignKey(Team.id),
+                               primary_key=True)
+    draft_round = db.Column(db.Integer, primary_key=True)
+    original_id = db.Column(db.Integer, db.ForeignKey(Team.id),
+                            primary_key=True)
+
+    def __init__(self, transaction_id, source_id, destination_id, draft_round,
+                 original_id):
+        self.transaction_id = transaction_id
+        self.source_id = source_id
+        self.destination_id = destination_id
+        self.draft_round = draft_round
+        self.original_id = original_id
+
 
 class PlayerStats(db.Model):
     __tablename__ = 'player_stats'
@@ -113,7 +209,16 @@ class PlayerStats(db.Model):
     blk = db.Column(db.Integer)
     points = db.Column(db.Float)
 
-    def __init__(self, player, date, g, a, pm, ppp, shp, sog, hit, blk, points):
+    @hybrid_method
+    def p(self):
+        return self.g + self.a
+
+    @p.expression
+    def p(cls):
+        return cls.g + cls.a
+
+    def __init__(self, player, date, g, a, pm, ppp, shp, sog, hit, blk,
+                 points):
         self.player_id = player.id
         self.date = date
         self.team_id = player.team_id
@@ -138,19 +243,45 @@ class PlayerStats(db.Model):
         hit = stat_json[6]['stat']['value']
         blk = stat_json[7]['stat']['value']
         points = point_json['total']
-        return PlayerStats(player, date, g, a, pm, ppp, shp, sog, hit, blk, points)
+        return PlayerStats(player, date, g, a, pm, ppp, shp, sog, hit, blk,
+                           points)
+
+    @staticmethod
+    def getColumnForSort(column_name):
+        if (column_name == 'g'):
+            return PlayerStats.g
+        elif (column_name == 'a'):
+            return PlayerStats.a
+        elif (column_name == 'pm'):
+            return PlayerStats.pm
+        elif (column_name == 'ppp'):
+            return PlayerStats.ppp
+        elif (column_name == 'shp'):
+            return PlayerStats.shp
+        elif (column_name == 'sog'):
+            return PlayerStats.sog
+        elif (column_name == 'hit'):
+            return PlayerStats.hit
+        elif (column_name == 'blk'):
+            return PlayerStats.blk
+        else:
+            return PlayerStats.points
+
 
 class SelectedPositions(db.Model):
     __tablename__ = 'selected_positions'
 
     player_id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, primary_key=True)
+    team_id = db.Column(db.Integer)
     position = db.Column(db.Text)
 
-    def __init__(self, player_id, date, position):
+    def __init__(self, player_id, date, team_id, position):
         self.player_id = player_id
         self.date = date
+        self.team_id = team_id
         self.position = position
+
 
 class GoalieStats(db.Model):
     __tablename__ = 'goalie_stats'
@@ -159,18 +290,18 @@ class GoalieStats(db.Model):
     date = db.Column(db.Date, primary_key=True)
     team_id = db.Column(db.Integer)
     w = db.Column(db.Integer)
-    l = db.Column(db.Integer)
+    loss = db.Column(db.Integer)
     ga = db.Column(db.Integer)
     sv = db.Column(db.Integer)
     so = db.Column(db.Integer)
     points = db.Column(db.Float)
 
-    def __init__(self, player, date, w, l, ga, sv, so, points):
+    def __init__(self, player, date, w, loss, ga, sv, so, points):
         self.player_id = player.id
         self.date = date
         self.team_id = player.team_id
         self.w = w
-        self.l = l
+        self.loss = loss
         self.ga = ga
         self.sv = sv
         self.so = so
@@ -179,12 +310,28 @@ class GoalieStats(db.Model):
     @staticmethod
     def parse_json(stat_json, point_json, player, date):
         w = stat_json[0]['stat']['value']
-        l = stat_json[1]['stat']['value']
+        loss = stat_json[1]['stat']['value']
         ga = stat_json[2]['stat']['value']
         sv = stat_json[3]['stat']['value']
         so = stat_json[4]['stat']['value']
         points = point_json['total']
-        return GoalieStats(player, date, w, l, ga, sv, so, points)
+        return GoalieStats(player, date, w, loss, ga, sv, so, points)
+
+    @staticmethod
+    def getColumnForSort(column_name):
+        if (column_name == 'w'):
+            return GoalieStats.w
+        elif (column_name == 'l'):
+            return GoalieStats.l
+        elif (column_name == 'ga'):
+            return GoalieStats.ga
+        elif (column_name == 'sv'):
+            return GoalieStats.sv
+        elif (column_name == 'so'):
+            return GoalieStats.so
+        else:
+            return GoalieStats.points
+
 
 if __name__ == "__main__":
     # Run this file directly to create the database tables.

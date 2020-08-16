@@ -63,7 +63,7 @@ class AuthenticationService:
 
         response = requests.post(AUTHORIZE_URL, params=params, headers=headers)
         print(response.url)
-        
+
         return input('Enter code: ')
 
     def __request_tokens(self, code):

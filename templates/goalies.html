@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}Players{% endblock %}
+{% block body %}
+<div style="overflow-x:auto;">
+<h2>Goalies</h2>
+<table id="goalies" class="sortable">
+    <tr>
+        <th>Name</th>
+        <th>GP</th>
+        <th>Wins</th>
+        <th>Losses</th>
+        <th>Goals Against</th>
+        <th>Saves</th>
+        <th>Shutouts</th>
+        <th>Fantasy Points</th>
+    </tr>
+{% for goalie in goalies %}
+    <tr>
+        <td>{{ goalie.first_name }} {{ goalie.last_name }}</td>
+        <td>{{ goalie.gp }}</td>
+        <td>{{ goalie.w }}</td>
+        <td>{{ goalie.l }}</td>
+        <td>{{ goalie.ga }}</td>
+        <td>{{ goalie.sv }}</td>
+        <td>{{ goalie.so }}</td>
+        <td>{{ "%.2f"|format(goalie.pts|round(2)) }}</td>
+    </tr>
+{% else %}
+    <tr>
+        <td>No goalies.</td>
+    </tr>
+{% endfor %}
+</table>
+</div>
+{% if prev_url %}
+<a href="{{ prev_url }}" >Previous</a>
+{% else %}
+Previous
+{% endif %}
+{% if next_url %}
+<a href="{{ next_url }}" >Next</a>
+{% else %}
+Next
+{% endif %}
+{% endblock %}

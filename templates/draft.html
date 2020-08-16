@@ -14,15 +14,15 @@
 <td><b>Rd. {{ i+1 }}</b></td>
 {% for j in range(10) %}
 {% set player = players[(i * 10) + j] %}
-{% set team = teams[player.team_id-1].team_name %}
+{% set team = teams[player.team_id-1].name %}
 
 {% if clazz =='position' %}
     {% set class_id = player.positions %}
 {% else %}
     {% set class_id = team %}
 {% endif %}
-<td class="{{ class_id }}" onclick="location.href='/player/{{ player.player_id }}'">
-    {% if player.keeper == True %}
+<td class="{{ class_id }}" onclick="location.href='/player/{{ player.id }}'">
+    {% if player.keeper %}
     <b>{{ player.first_name }} {{ player.last_name }}<br>
     {{ player.nhl_team }} - {{ player.positions }}<br>{{ team }}</b>
     {% else %}

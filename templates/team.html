@@ -4,12 +4,41 @@
 <h1>{{ teams[team_id].name }} - {{ teams[team_id].manager }}</h1>
 <div style="overflow-x:auto;">
 
+<h2>Draft Picks</h2>
+{% for pick in picks %}
+<b>
+    {{ pick }}
+    {% if loop.index % 6 == 0 %}
+    <br>
+    {% elif loop.index % 6 < 6 %}
+    |
+    {% endif %}
+</b>
+{% endfor %}
+
+<br><br>
+
+{% if date %}
+    {% if prev_url %}
+    <a href="{{ prev_url }}" >{{ prev_date }}</a>
+    {% elif prev_date %}
+    {{ prev_date }}
+    {% endif %}
+    {% if next_url %}
+    <a href="{{ next_url }}" >{{ next_date }}</a>
+    {% elif next_date %}
+    {{ next_date }}
+    {% endif %}
+{% endif %}
+
 <h2>Players</h2>
 <table id="players" class="sortable">
     <tr>
         <th>Position</th>
         <th>Name</th>
+        {% if not date %}
         <th>GP</th>
+        {% endif %}
         <th>Goals</th>
         <th>Assists</th>
         <th>Points</th>
@@ -19,21 +48,31 @@
         <th>SOG</th>
         <th>Hits</th>
         <th>Blocks</th>
+        <th>Fantasy Points</th>
+        {% if not date %}
+        <th>Keeper Cost</th>
+        {% endif %}
     </tr>
 {% for skater in skaters %}
     <tr>
-        <td>{{ skater.positions }}</td>
+        <td>{{ skater.pos }}</td>
         <td>{{ skater.first_name }} {{ skater.last_name }}</td>
+        {% if not date %}
         <td>{{ skater.gp }}</td>
-        <td>{{ skater.g }}</td>
-        <td>{{ skater.a }}</td>
-        <td>{{ skater.p }}</td>
-        <td>{{ skater.pm }}</td>
-        <td>{{ skater.ppp }}</td>
-        <td>{{ skater.shp }}</td>
-        <td>{{ skater.sog }}</td>
-        <td>{{ skater.hit }}</td>
-        <td>{{ skater.blk }}</td>
+        {% endif %}
+        <td>{{ skater.g if skater.g != None else '-' }}</td>
+        <td>{{ skater.a if skater.a != None else '-'  }}</td>
+        <td>{{ skater.p if skater.p != None else '-'  }}</td>
+        <td>{{ skater.pm if skater.pm != None else '-'  }}</td>
+        <td>{{ skater.ppp if skater.ppp != None else '-'  }}</td>
+        <td>{{ skater.shp if skater.shp != None else '-'  }}</td>
+        <td>{{ skater.sog if skater.sog != None else '-'  }}</td>
+        <td>{{ skater.hit if skater.hit != None else '-'  }}</td>
+        <td>{{ skater.blk if skater.blk != None else '-'  }}</td>
+        <td>{{ "%.2f"|format(skater.points|round(2)) if skater.points != None else '-' }}</td>
+        {% if not date %}
+        <td>{{ skater.keeper_cost }}</td>
+        {% endif %}
     </tr>
 {% else %}
     <tr>
@@ -47,23 +86,35 @@
     <tr>
         <th>Position</th>
         <th>Name</th>
+        {% if not date %}
         <th>GP</th>
+        {% endif %}
         <th>Wins</th>
         <th>Losses</th>
         <th>Goals Against</th>
         <th>Saves</th>
         <th>Shutouts</th>
+        <th>Fantasy Points</th>
+        {% if not date %}
+        <th>Keeper Cost</th>
+        {% endif %}
     </tr>
 {% for goalie in goalies %}
     <tr>
-        <td>{{ goalie.positions }}</td>
+        <td>{{ goalie.pos }}</td>
         <td>{{ goalie.first_name }} {{ goalie.last_name }}</td>
+        {% if not date %}
         <td>{{ goalie.gp }}</td>
-        <td>{{ goalie.w }}</td>
-        <td>{{ goalie.l }}</td>
-        <td>{{ goalie.ga }}</td>
-        <td>{{ goalie.sv }}</td>
-        <td>{{ goalie.so }}</td>
+        {% endif %}
+        <td>{{ goalie.w if goalie.w != None else '-' }}</td>
+        <td>{{ goalie.l if goalie.l != None else '-' }}</td>
+        <td>{{ goalie.ga if goalie.ga != None else '-' }}</td>
+        <td>{{ goalie.sv if goalie.sv != None else '-' }}</td>
+        <td>{{ goalie.so if goalie.so != None else '-' }}</td>
+        <td>{{ "%.2f"|format(goalie.points|round(2)) if goalie.points != None else '-' }}</td>
+        {% if not date %}
+        <td>{{ goalie.keeper_cost }}</td>
+        {% endif %}
     </tr>
 {% else %}
     <tr>

@@ -1,8 +1,10 @@
 from auth import AuthenticationService
 import requests
 import time
+import sys
 
 BASE_URL = 'https://fantasysports.yahooapis.com/fantasy/v2'
+
 
 class YahooFantasyApi:
     def __init__(self, league_id):
@@ -16,7 +18,7 @@ class YahooFantasyApi:
         self.expires_by = self.auth_service.get_expires_by()
 
     def __check_tokens(self):
-        if time.time() > self.expires_by:
+        if time.time() > self.expires_by - 300:
             self.auth_service.refresh_tokens()
             self.__set_tokens()
 
@@ -29,11 +31,21 @@ class YahooFantasyApi:
         headers = {'Authorization': 'Bearer {}'.format(self.access_token)}
         url = '{}/{}'.format(BASE_URL, path)
 
-        return requests.get(url, params=params, headers=headers).json()['fantasy_content']
+        time.sleep(1)
+
+        try:
+            response = requests.get(url, params=params, headers=headers)
+            if response.status_code == 200:
+                return response.json()['fantasy_content']
+            else:
+                print(response.status_code, response.text)
+                sys.exit()
+        except:
+            print(sys.exc_info()[0])
 
     def __get_game_resource(self, sub_resource):
         path = 'game/nhl/{}'.format(sub_resource)
-        return self.__get(path)
+        return self.__get(path)['game']
 
     def __get_league_resource(self, sub_resource):
         path = 'league/nhl.l.{}/{}'.format(self.league_id, sub_resource)
@@ -41,15 +53,11 @@ class YahooFantasyApi:
 
     def __get_player_resource(self, sub_resource, player_id):
         path = 'player/nhl.p.{}/{}'.format(player_id, sub_resource)
-        return self.__get(path)
+        return self.__get(path)['player']
 
     def __get_team_resource(self, sub_resource, team_id):
         path = 'team/nhl.l.{}.t.{}/{}'.format(self.league_id, team_id, sub_resource)
         return self.__get(path)['team']
-
-    def __get_transaction_resource(self, sub_resource, transaction_id):
-        path = 'team/nhl.l.{}.tr.{}/{}'.format(self.league_id, transaction_id, sub_resource)
-        return self.__get(path)
 
     #############################
     # Public facing Api methods
@@ -69,7 +77,7 @@ class YahooFantasyApi:
 
     def get_stats(self, team_id, date):
         return self.__get_team_resource('roster;type=date;date={}/players/stats'.format(date), team_id)
-    
+
     def get_teams(self):
         return self.__get_league_resource('teams')[1]['teams']
     
@@ -78,10 +86,10 @@ class YahooFantasyApi:
 
     def get_player(self, player_id):
         return self.__get_player_resource('metadata', player_id)
-    
+
     def get_players(self, start):
         return self.__get_league_resource('players;start={};type=season/ownership'.format(start))
-    
+
     def get_keepers(self, start):
         return self.__get_league_resource('players;start={};status=K'.format(start))
 
@@ -90,9 +98,15 @@ class YahooFantasyApi:
 
     def get_game_weeks(self):
         return self.__get_game_resource('game_weeks')
-    
+
     def get_stats_players(self, start, date):
         return self.__get_league_resource('players;start={};out=ownership/stats;type=date;date={}'.format(start, date))
-    
+
+    def get_stats_players_season(self, start):
+        return self.__get_league_resource('players;start={};sort=AR/stats;type=season;season=2018'.format(start))
+
     def get_league_metadata(self):
         return self.__get_league_resource('metadata')
+
+    def get_stats_players_test(self, start, count, date):
+        return self.__get_league_resource('players;start={};count={};out=ownership/stats;type=date;date={}'.format(start, count, date))

@@ -9,7 +9,7 @@
     <body>
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/transactions/">Transactions</a></li>
+            <li><a href="/transactions">Transactions</a></li>
             <li class="dropdown">
                 <a href="#" class="dropbtn">Teams</a>
                 <div class="dropdown-content">
@@ -21,7 +21,12 @@
                     {% endfor %}
                 </div>
             </li>
-            <li><a href="/players/">Players</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropbtn">Players</a>
+                <div class="dropdown-content">
+                    <a href="/skaters">Skaters</a>
+                    <a href="/goalies">Goalies</a>
+                </div>
             <li><a href="/draft/team">Draft</a></li>
             <li style="float:right"><a href="https://hockey.fantasysports.yahoo.com/hockey/1994">League Website</a></li>
         </ul>
