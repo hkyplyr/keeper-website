@@ -1,0 +1,30 @@
+version: '3.6'
+
+services:
+  app:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db/yahoofantasy
+    networks:
+      - default
+    ports:
+      - 5000:5000
+    volumes:
+      - ./:/usr/src/app
+    restart: always
+
+  db:
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: yahoofantasy
+    image: postgres:latest
+    networks:
+      - default
+    ports:
+      - 5405:5432
+    restart: always
+    volumes:
+      - ./.database:/var/lib/postgresql/data
