@@ -1,4 +1,4 @@
-from auth import AuthenticationService
+from yfantasy_api.auth import AuthenticationService
 import requests
 import time
 import sys

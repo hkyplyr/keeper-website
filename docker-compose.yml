@@ -6,6 +6,8 @@ services:
     depends_on:
       - db
     environment:
+      FLASK_APP: app.py
+      FLASK_ENV: development
       DATABASE_URL: postgresql://postgres:password@db/yahoofantasy
     networks:
       - default

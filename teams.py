@@ -1,4 +1,4 @@
-from api import YahooFantasyApi
+from yfantasy_api.api import YahooFantasyApi
 from app import get_db
 from datetime import timedelta, datetime
 from sqlalchemy import func
@@ -6,8 +6,7 @@ from models import Team, Player, PlayerStats, GoalieStats, SelectedPositions, \
     Draft, Pick, Transaction, TransactionPicks, TransactonPlayers
 from utils.date_utils import get_date_range, get_todays_date
 
-
-yfs = YahooFantasyApi(league_id=5194)
+yfs = api.YahooFantasyApi(league_id=5194)
 
 db = get_db()
 def update_teams():

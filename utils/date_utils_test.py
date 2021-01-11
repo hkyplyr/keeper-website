@@ -2,7 +2,6 @@ import json
 import pytest
 import pytest_mock
 
-from api import YahooFantasyApi
 from datetime import datetime
 from utils import date_utils
 

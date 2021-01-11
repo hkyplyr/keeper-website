@@ -1,4 +1,4 @@
-from api import YahooFantasyApi
+from yfantasy_api.api import YahooFantasyApi
 from utils.date_utils import get_todays_date
 import argparse
 import csv
