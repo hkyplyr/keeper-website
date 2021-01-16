@@ -1,5 +1,3 @@
-import setuptools
-print(setuptools.find_packages())
 from yfantasy_api.api import YahooFantasyApi
 from keeper_website.app import db, create_app
 from datetime import timedelta, datetime
@@ -27,6 +25,7 @@ def update_teams():
 
         db.session.merge(team)
     db.session.commit()
+
 
 def update_players():
     keeper_costs = get_keeper_cost()
@@ -312,13 +311,12 @@ def update_statistics():
                 pos = player_base[1]['selected_position'][1]['position']
                 selected_position = SelectedPositions(player_id, d, i, pos)
                 db.session.merge(selected_position)
-            db.session.commit()    
+            db.session.commit()
+
 
 def get_keeper_cost():
     costs = Draft.query \
-       .add_columns(
-           Draft.player_id,
-           Draft.round)
+        .add_columns(Draft.player_id, Draft.round)
     ddict = {}
     for row in costs:
         draft_round = row[2]
@@ -329,15 +327,14 @@ def get_keeper_cost():
         else:
             cost = draft_round - 2
 
-
         ddict[row[1]] = cost
     return ddict
 
-if __name__ == '__main__':
-    #update_teams()
-    initialize_picks()
-    #update_players()
-    #update_draft_results()
-    #get_trans()
-    #update_statistics()
 
+if __name__ == '__main__':
+    # update_teams()
+    # initialize_picks()
+    # update_players()
+    # update_draft_results()
+    # get_trans()
+    update_statistics()
