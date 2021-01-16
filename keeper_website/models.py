@@ -1,8 +1,7 @@
-from app import get_db
-from utils.json_utils import get_value
+from keeper_website.database import db
+from keeper_website.utils.json_utils import get_value
 from sqlalchemy.ext.hybrid import hybrid_method
 
-db = get_db()
 
 class Team(db.Model):
     __tablename__ = 'teams'
@@ -82,10 +81,10 @@ class Player(db.Model):
         elif ownership['ownership_type'] == 'waivers':
             team_id = 99
         else:
-            team_id = ownership['owner_team_key'][13:]
+            team_id = ownership['owner_team_key'][14:]
         
         # Get the keeper cost for the player
-        keeper_cost = keeper_costs.get(id, 18)
+        keeper_cost = keeper_costs.get(id, 14)
 
         return Player(id, first_name, last_name, nhl_team, number,
                       positions, team_id, keeper_cost)
@@ -111,7 +110,7 @@ class Draft(db.Model):
     @staticmethod
     def parse_json(json, keepers):
         player_id = json['player_key'][6:]
-        team_id = json['team_key'][13:]
+        team_id = json['team_key'][14:]
         pick = json['pick']
         round = json['round']
         keeper = player_id in keepers
@@ -134,8 +133,8 @@ class Pick(db.Model):
 
     @staticmethod
     def parse_json(json):
-        original_team = json['original_team_key'][13:]
-        destination_team = json['destination_team_key'][13:]
+        original_team = json['original_team_key'][14:]
+        destination_team = json['destination_team_key'][14:]
         draft_round = json['round']
         return Pick(original_team, destination_team, draft_round)
 
@@ -252,6 +251,8 @@ class PlayerStats(db.Model):
             return PlayerStats.g
         elif (column_name == 'a'):
             return PlayerStats.a
+        elif (column_name == 'p'):
+            return PlayerStats.p()
         elif (column_name == 'pm'):
             return PlayerStats.pm
         elif (column_name == 'ppp'):

@@ -12,7 +12,6 @@ def get_dates_from_week(yfs, week):
 def get_date_range(start, end):
     return pandas.date_range(start, end)
 
-
 def get_todays_date():
     return str(date.today())
 

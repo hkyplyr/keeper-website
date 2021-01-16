@@ -3,7 +3,7 @@ import pytest
 import pytest_mock
 
 from datetime import datetime
-from utils import date_utils
+from keeper_website.utils import date_utils
 
 
 def test_get_date_range():

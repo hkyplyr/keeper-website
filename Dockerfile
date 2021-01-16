@@ -8,12 +8,12 @@ RUN apt-get update -y && \
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 
-COPY ./requirements.txt usr/src/app/requirements.txt
+COPY ./requirements.txt usr/src/keeper_website/requirements.txt
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/keeper_website
 
 RUN pip3 install -r requirements.txt
 
-COPY ./keeper-website /usr/src/app
+COPY ./keeper_website /usr/src/keeper_website
 
 CMD [ "flask", "run", "--host=0.0.0.0" ]

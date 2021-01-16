@@ -1,1 +1,0 @@
-# Yahoo! Fantasy API Wrapper

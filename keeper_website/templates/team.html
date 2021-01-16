@@ -8,9 +8,7 @@
 {% for pick in picks %}
 <b>
     {{ pick }}
-    {% if loop.index % 6 == 0 %}
-    <br>
-    {% elif loop.index % 6 < 6 %}
+    {% if loop.index % 24 > 0 %}
     |
     {% endif %}
 </b>
@@ -25,7 +23,7 @@
     {{ prev_date }}
     {% endif %}
     {% if next_url %}
-    <a href="{{ next_url }}" >{{ next_date }}</a>
+    <a style=float:right href="{{ next_url }}" >{{ next_date }}</a>
     {% elif next_date %}
     {{ next_date }}
     {% endif %}

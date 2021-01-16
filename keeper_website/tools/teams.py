@@ -1,20 +1,28 @@
+import setuptools
+print(setuptools.find_packages())
 from yfantasy_api.api import YahooFantasyApi
-from app import get_db
+from keeper_website.app import db, create_app
 from datetime import timedelta, datetime
 from sqlalchemy import func
-from models import Team, Player, PlayerStats, GoalieStats, SelectedPositions, \
+from keeper_website.models import Team, Player, PlayerStats, GoalieStats, SelectedPositions, \
     Draft, Pick, Transaction, TransactionPicks, TransactonPlayers
-from utils.date_utils import get_date_range, get_todays_date
+from keeper_website.utils.date_utils import get_date_range, get_todays_date
+from flask import Flask
+import os
 
-yfs = YahooFantasyApi(league_id=5194)
 
-db = get_db()
+app = create_app()
+app.app_context().push()
+print(db)
+
+yfs = YahooFantasyApi(league_id=17457)
+
+
 def update_teams():
-    teams = yfs.get_teams()
+    teams = yfs.get_league_teams()['teams']
     for t in teams:
         if t == 'count':
             continue
-
         team = Team.parse_json(teams[t]['team'][0])
 
         db.session.merge(team)
@@ -23,7 +31,7 @@ def update_teams():
 def update_players():
     keeper_costs = get_keeper_cost()
     for i in range(0, 2500, 25):
-        players = yfs.get_players(i)[1]['players']
+        players = yfs.get_league_players(i)['players']
         if len(players) == 0:
             break
 
@@ -39,7 +47,7 @@ def update_players():
 
 def update_draft_results():
     all_keepers = get_keepers()
-    draft_results = yfs.get_draft_results()
+    draft_results = yfs.get_league_draft_results()['draft_results']
     for dr in draft_results:
         if dr == 'count':
             continue
@@ -52,7 +60,7 @@ def update_draft_results():
 def get_keepers():
     all_keepers = []
     for i in range(0, 2500, 25):
-        keepers = yfs.get_keepers(i)[1]['players']
+        keepers = yfs.get_league_keepers(i)['players']
         if len(keepers) == 0:
             break
 
@@ -86,7 +94,7 @@ def update_matchups():
 
 
 def get_trans():
-    transactions = yfs.get_transactions()
+    transactions = yfs.get_leage_transactions()['transactions']
     for t in reversed(range(transactions['count'])):
         transaction = transactions[str(t)]['transaction']
 
@@ -133,7 +141,7 @@ def parse_faab_bid(transaction_type, transaction_info):
 
 
 def parse_team_id(team_key):
-    return team_key[13:]
+    return team_key[14:]
 
 
 def parse_draft_picks(transaction_info, transaction_id):
@@ -228,7 +236,7 @@ def parse_players_for_drop(transaction_info):
 
 def initialize_picks():
     for draft_round in range(1, 25):
-        for team in range(1, 11):
+        for team in range(1, 13):
             pick = Pick(team, team, draft_round)
 
             db.session.merge(pick)
@@ -247,19 +255,20 @@ def check_player_played(player):
 def get_start_date():
     last_updated_date = db.session.query(func.max(SelectedPositions.date))
     if last_updated_date[0][0] is not None:
-        return last_updated_date[0][0] - timedelta(1)
+        return last_updated_date[0][0] - timedelta(days=1)
     else:
-        return yfs.get_league_metadata()[0].get('start_date')
+        return yfs.get_league_settings(True)[0].get('start_date')
 
 
 def update_statistics():
+    keeper_costs = get_keeper_cost()
     date_range = get_date_range(get_start_date(), get_todays_date())
     for d in date_range:
         print("Adding stats for {}".format(d.date()))
 
         for i in range(0, 2500, 25):
             print("Adding stats for players {}-{}".format(i, i + 25))
-            players = yfs.get_stats_players(i, d)[1].get('players')
+            players = yfs.get_league_player_stats(i, d).get('players')
             if len(players) == 0:
                 break
 
@@ -267,7 +276,7 @@ def update_statistics():
                 if p == 'count':
                     continue
                 player_base = players[p]['player']
-                player = Player.parse_json(player_base[0], player_base[1])
+                player = Player.parse_json(player_base[0], player_base[1], keeper_costs)
                 player_stats = player_base[2]['player_stats']['stats']
                 player_points = player_base[2]['player_points']
                 if player.positions == 'G':
@@ -275,6 +284,8 @@ def update_statistics():
                                                   player, d)
                     if stat.w == '-':
                         continue
+                    else:
+                        print(player_base)
                 else:
                     stat = PlayerStats.parse_json(player_stats, player_points,
                                                   player, d)
@@ -283,9 +294,9 @@ def update_statistics():
                 db.session.merge(stat)
             db.session.commit()
 
-        for i in range(1, 11):
+        for i in range(1, 13):
             print("Adding stats for team {}".format(i))
-            players = yfs.get_stats(i, d)[1].get('roster').get('0') \
+            players = yfs.get_team_stats(i, d, None).get('roster').get('0') \
                 .get('players')
 
             if len(players) == 0:
@@ -310,7 +321,16 @@ def get_keeper_cost():
            Draft.round)
     ddict = {}
     for row in costs:
-        ddict[row[1]] = row[2] - 1
+        draft_round = row[2]
+        if draft_round < 2:
+            cost = 0
+        elif draft_round > 22:
+            cost = 20
+        else:
+            cost = draft_round - 2
+
+
+        ddict[row[1]] = cost
     return ddict
 
 if __name__ == '__main__':
@@ -318,6 +338,6 @@ if __name__ == '__main__':
     initialize_picks()
     #update_players()
     #update_draft_results()
-    get_trans()
+    #get_trans()
     #update_statistics()
 

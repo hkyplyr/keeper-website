@@ -26,6 +26,19 @@ li.dropdown {
     display: inline-block;
 }
 
+a.sort-header:link {
+    text-decoration: none;
+    color: black;
+}
+a.sort-header:visited {
+    text-decoration: none;
+    color: black;
+}
+a.sort-header:hover {
+    text-decoration: none;
+    color: black;
+}
+
 .dropdown-content {
     display: none;
     position: absolute;

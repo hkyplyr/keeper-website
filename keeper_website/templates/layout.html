@@ -27,8 +27,16 @@
                     <a href="/skaters">Skaters</a>
                     <a href="/goalies">Goalies</a>
                 </div>
-            <li><a href="/draft/team">Draft</a></li>
-            <li style="float:right"><a href="https://hockey.fantasysports.yahoo.com/hockey/1994">League Website</a></li>
+            <li class="dropdown">
+                <a href="#">Draft</a>
+                <div class="dropdown-content">
+                    <a href="/draft/team">By Team</a>
+                    <a href="/draft/position">By Position</a>
+                </div>
+            </li>
+
+            <li style="float:right"><a href="https://hockey.fantasysports.yahoo.com/hockey/17457">League Website</a></li>
+            <li  style="float:right"><a href="/keeper-costs">Keeper Costs</a></li>
         </ul>
         {% block body %}
         {% endblock %}
