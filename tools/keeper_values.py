@@ -162,9 +162,6 @@ def log(text_to_print, debug=args.debug):
     if debug:
         print(text_to_print)
 
-def get_current_date_time():
-    return datetime.now().strftime('%Y-%m-%d %I:%M:%S%p')
-
 def get_rosters_for_csv():
     """Retrieve the list of players for each team, formatted for printing
     in columns to a csv file.
