@@ -5,5 +5,5 @@ Flask_SQLAlchemy==2.4.4
 pytest==6.2.1
 pytest_mock==3.5.1
 psycopg2-binary==2.8.6
-pandas==1.2.0
+pandas
 gunicorn==20.0.4
