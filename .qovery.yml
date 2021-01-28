@@ -12,4 +12,4 @@ routers:
   routes:
   - application_name: "keeper-website"
     paths:
-    - "/*"
+    - /
