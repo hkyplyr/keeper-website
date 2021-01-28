@@ -8,6 +8,8 @@ RUN apt-get update -y && \
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
 
+EXPOSE 5000
+
 COPY ./requirements.txt usr/src/keeper_website/requirements.txt
 
 WORKDIR /usr/src/keeper_website

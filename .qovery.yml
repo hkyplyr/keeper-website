@@ -3,6 +3,7 @@ application:
   name: "keeper-website"
   project: "keeper-website"
   organization: "QoveryCommunity"
+  publicly_accessible: true
 databases:
 - type: "POSTGRESQL"
   name: "keeper-database"
@@ -12,4 +13,4 @@ routers:
   routes:
   - application_name: "keeper-website"
     paths:
-    - /
+    - /*
