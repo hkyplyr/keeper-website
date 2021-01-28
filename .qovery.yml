@@ -10,6 +10,9 @@ databases:
   version: "12"
 routers:
 - name: "main-keeper-website"
+  custom_domains:
+    - branch: master
+      domain: travispaquette.com
   routes:
   - application_name: "keeper-website"
     paths:
