@@ -8,7 +8,7 @@ from keeper_website.utils.date_utils import get_prev_date, get_next_date, conver
 from keeper_website.utils.json_utils import get_ordinal
 import itertools
 import csv
-import os
+from os import makedirs, path
 
 
 bp = Blueprint('bp', __name__)
@@ -318,7 +318,8 @@ def goalies():
 def keeper_costs():
     filename = f'keeper-costs-{get_todays_date()}.csv'
     filepath = f'reports/{filename}'
-    if os.path.exists(filepath):
+    makedirs(path.dirname(filepath), exist_ok=True)
+    if path.exists(filepath):
         print("EXISTS")
         return send_file(filepath, attachment_filename=filename, as_attachment=True, cache_timeout=-1)
 
